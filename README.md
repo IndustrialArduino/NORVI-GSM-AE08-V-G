@@ -20,5 +20,5 @@ Analog Inputs with 0-10V
 DIN-Rail mount
 Expansions Supported
 
-Datasheet:   https://drive.google.com/open?id=1XH32jAAcfXfCFqwXYJezPlaod5E81aAm&usp=drive_fs
-User Guide:  https://drive.google.com/open?id=1eAQOVmQMPbuxKAQuAlvLjjuQPc48iylC&usp=drive_fs
+Datasheet:   https://norvi.lk/docs/norvi-gsm-ae08-v-g-datasheet/
+User Guide:  https://norvi.lk/docs/norvi-gsm-ae08-v-g-user-guide/
