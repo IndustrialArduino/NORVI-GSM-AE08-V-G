@@ -1,7 +1,4 @@
-
 /*
- * 
- * 
  * RTC Check
  * micro SD Card Check CS : 15
  * Ethernet Check      CS : 5
@@ -9,13 +6,9 @@
  * EC2G
  * All Output Turn ON Series
  * All input status serial print
- * 
-  Turns ON All Outputs in series
-  Serial prints all the input status
-  SIM800C External Antenna Test
-  
- *   
- * 
+ * Turns ON All Outputs in series
+ * Serial prints all the input status
+ * SIM800C External Antenna Test
  */
 
 #include <SPI.h>
@@ -56,10 +49,7 @@
 #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-
 Adafruit_ADS1115 ads1;
-
-
 
 RTC_DS3231 rtc; 
 char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
@@ -67,46 +57,27 @@ char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursd
 // Enter a MAC address for your controller below.
 // Newer Ethernet shields have a MAC address printed on a sticker on the shield
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
-
 unsigned int localPort = 8888;       // local port to listen for UDP packets
-
 const char timeServer[] = "time.nist.gov"; // time.nist.gov NTP server
-
 const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
-
 byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
-
 EthernetUDP Udp;// A UDP instance to let us send and receive packets over UDP
 
-
-
-
 int analog_value = 0;
-
   
-int readSwitch(){
+int readSwitch() {
   analog_value = analogRead(ANALOG_PIN_0);
-
- 
-  return analog_value                                                                                                ; //Read analog
+  return analog_value; //Read analog
 }
-
-
-
 unsigned long int timer1 = 0;
-
 // ================================================ SETUP ================================================
 void setup() {
- 
   Serial.begin(9600);
-
   Serial.println("Hello");
   Serial1.begin(9600, SERIAL_8N1, RS485_RX, RS485_TX); 
   Serial2.begin(9600, SERIAL_8N1, GSM_RX, GSM_TX); 
-
   //pinMode(GSM_RESET, OUTPUT);
   //digitalWrite(GSM_RESET, HIGH);   // RS-485 
-
   pinMode(RS485_FC, OUTPUT);
   digitalWrite(RS485_FC, HIGH);   // RS-485 
   
@@ -125,7 +96,6 @@ void setup() {
   pinMode(INPUT3, INPUT);
   pinMode(INPUT4, INPUT);
   pinMode(INPUT5, INPUT);
-
   
   Wire.begin(16,17);
 
@@ -134,21 +104,16 @@ void setup() {
     for(;;); // Don't proceed, loop forever
   }
   display.display();
-
-   if (!ads1.begin(0x48)) {
+  if (!ads1.begin(0x48)) {
     Serial.println("Failed to initialize ADS 1 .");
     while (1);
   }
-
   RTC_Check();
   delay(1000);
   SD_CHECK();
   delay(1000);
-  
   Serial.println("Testing Modem");
-  
-
- timer1 = millis();
+  timer1 = millis();
   Serial2.println("AT");
   while(millis()<timer1+10000){
     while (Serial2.available()) {
@@ -156,7 +121,6 @@ void setup() {
     Serial.write(inByte);
     }
   }
-
   timer1 = millis();
   Serial2.println("AT+CPIN?");
   while(millis()<timer1+10000){
@@ -173,50 +137,34 @@ void setup() {
     Serial.write(inByte);
     }
   }
-
-   Serial.println("Testing Modem Done");
-
-   
-  ETHERNET_CHECK();
-
-  
+  Serial.println("Testing Modem Done");   
+  ETHERNET_CHECK();  
   adcAttachPin(36);
-
-
-  digitalWrite(RS485_FC, HIGH);   // RS-485 
-
-
-  //
-  
+  digitalWrite(RS485_FC, HIGH);   // RS-485   
 }
 
-
-
-
-
-
 void loop() {
-
   int16_t adc0, adc1, adc2, adc3;
-  
   // read from port 0, send to port 1:
   while (Serial.available()) {
     int inByte = Serial.read();
     Serial2.write(inByte);
   }
-
   while (Serial2.available()) {
     int inByte = Serial2.read();
     Serial.write(inByte);
   }
-
  
- 
-  Serial.print(digitalRead(INPUT1));Serial.print(digitalRead(INPUT2));Serial.print(digitalRead(INPUT3));Serial.print(digitalRead(INPUT4));Serial.print(digitalRead(INPUT5));
+  Serial.print(digitalRead(INPUT1));
+  Serial.print(digitalRead(INPUT2));
+  Serial.print(digitalRead(INPUT3));
+  Serial.print(digitalRead(INPUT4));
+  Serial.print(digitalRead(INPUT5));
   Serial.println(""); 
 
   Serial.println(""); 
-  Serial.print("Push button  ");Serial.println(readSwitch());
+  Serial.print("Push button  ");
+  Serial.println(readSwitch());
   Serial.println(""); 
 
   adc0 = ads1.readADC_SingleEnded(0);
@@ -229,18 +177,11 @@ void loop() {
   Serial.print("AIN2: "); Serial.print(adc1); Serial.println("  ");
   Serial.print("AIN3: "); Serial.print(adc2); Serial.println("  ");
   Serial.print("AIN4: "); Serial.print(adc3); Serial.println("  ");
-
-
-
   
   Serial1.println("Hello RS-485");
-   
- //Serial2.println("AT");
- delay(1000);
- 
- 
+  //Serial2.println("AT");
+  delay(1000);
 }
-
 
 void displayTime(void) {
   DateTime now = rtc.now();
@@ -260,130 +201,104 @@ void displayTime(void) {
   Serial.print(now.second(), DEC);
   Serial.println();
   delay(1000);
-
 }
 
 void RTC_Check(){
   if (! rtc.begin()) {
     Serial.println("Couldn't find RTC");
   }
- else{
- if (rtc.lostPower()) {
-  
+  else{
+  if (rtc.lostPower()) {
     Serial.println("RTC lost power, lets set the time!");
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-    
-  }
-
-   
+  }  
   int a=1;
-  while(a<6)
-  {
-  displayTime();   // printing time function for oled
-  a=a+1;
+  while(a<6)  {
+    displayTime();   // printing time function for oled
+    a=a+1;
   }
  }
 }
 
-
-
 void SD_CHECK(){
   uint8_t cardType = SD.cardType();
-  
-    if(SD.begin(15))
- {
-  Serial.println("Card Mount: success");
-  Serial.print("Card Type: ");
-
+  if(SD.begin(15)) {
+    Serial.println("Card Mount: success");
+    Serial.print("Card Type: ");
     if(cardType == CARD_MMC){
         Serial.println("MMC");
-    } else if(cardType == CARD_SD){
+    } 
+    else if(cardType == CARD_SD){
         Serial.println("SDSC");
-    } else if(cardType == CARD_SDHC){
+    } 
+    else if(cardType == CARD_SDHC){
         Serial.println("SDHC");
-    } else {
+    } 
+    else {
         Serial.println("Unknown");
     }
-
-  int cardSize = SD.cardSize() / (1024 * 1024);
-  Serial.printf("Card Size: %lluMB\n", cardSize);
-
+    int cardSize = SD.cardSize() / (1024 * 1024);
+    Serial.printf("Card Size: %lluMB\n", cardSize);
   }
-
-  if(!SD.begin(15))
-  {
-  Serial.println("NO SD card");            
+  if(!SD.begin(15))  {
+     Serial.println("NO SD card");            
   }
-
 }
-
 void ETHERNET_CHECK(){
   Ethernet.init(5);  // ESP32 with Adafruit Featherwing Ethernet
-
   // start Ethernet and UDP
   if (Ethernet.begin(mac) == 0) {
-  Serial.println("Failed to configure Ethernet using DHCP");
-
+    Serial.println("Failed to configure Ethernet using DHCP");
     // Check for Ethernet hardware present
-  if (Ethernet.hardwareStatus() == EthernetNoHardware) {
-  Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
+    if (Ethernet.hardwareStatus() == EthernetNoHardware) {
+       Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
+    } 
+    if (Ethernet.linkStatus() == LinkOFF) {
+       Serial.println("Ethernet cable is not connected.");
+    }
   }
-  
-  if (Ethernet.linkStatus() == LinkOFF) {
-   Serial.println("Ethernet cable is not connected.");
-  }
-  }
-  
- else{
-  Udp.begin(localPort);
- 
-  sendNTPpacket(timeServer); // send an NTP packet to a time server
-
-  // wait to see if a reply is available
-  delay(1000);
-  if (Udp.parsePacket()) {
-    // We've received a packet, read the data from it
-    Udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
-
-    // the timestamp starts at byte 40 of the received packet and is four bytes,
-    // or two words, long. First, extract the two words:
-
-    unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
-    unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
-    // combine the four bytes (two words) into a long integer
-    // this is NTP time (seconds since Jan 1 1900):
-    unsigned long secsSince1900 = highWord << 16 | lowWord;
-    Serial.print("Seconds since Jan 1 1900 = ");
-    Serial.println(secsSince1900);
-
-    // now convert NTP time into everyday time:
-    Serial.print("Unix time = ");
-    // Unix time starts on Jan 1 1970. In seconds, that's 2208988800:
-    const unsigned long seventyYears = 2208988800UL;
-    // subtract seventy years:
-    unsigned long epoch = secsSince1900 - seventyYears;
-    // print Unix time:
-    Serial.println(epoch);
-
-
-    // print the hour, minute and second:
-   Serial.print("The UTC time is ");
-   Serial.print((epoch  % 86400L) / 3600);
-    // print the hour (86400 equals secs per day)
-   Serial.print(':');
-   if (((epoch % 3600) / 60) < 10) {
-      // In the first 10 minutes of each hour, we'll want a leading '0'
-      Serial.print('0');
-   }
+  else  {
+    Udp.begin(localPort);
+    sendNTPpacket(timeServer); // send an NTP packet to a time server
+    // wait to see if a reply is available
+    delay(1000);
+    if (Udp.parsePacket()) {
+      // We've received a packet, read the data from it
+      Udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
+      // the timestamp starts at byte 40 of the received packet and is four bytes,
+      // or two words, long. First, extract the two words:
+      unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
+      unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
+      // combine the four bytes (two words) into a long integer
+      // this is NTP time (seconds since Jan 1 1900):
+      unsigned long secsSince1900 = highWord << 16 | lowWord;
+      Serial.print("Seconds since Jan 1 1900 = ");
+      Serial.println(secsSince1900);
+      // now convert NTP time into everyday time:
+      Serial.print("Unix time = ");
+      // Unix time starts on Jan 1 1970. In seconds, that's 2208988800:
+      const unsigned long seventyYears = 2208988800UL;
+      // subtract seventy years:
+      unsigned long epoch = secsSince1900 - seventyYears;
+      // print Unix time:
+      Serial.println(epoch);
+      // print the hour, minute and second:
+      Serial.print("The UTC time is ");
+      Serial.print((epoch  % 86400L) / 3600);
+      // print the hour (86400 equals secs per day)
+      Serial.print(':');
+      if (((epoch % 3600) / 60) < 10) {
+         // In the first 10 minutes of each hour, we'll want a leading '0'
+        Serial.print('0');
+      }
     
-   Serial.print((epoch  % 3600) / 60); // print the minute (3600 equals secs per minute)
-   Serial.print(':');
-   if ((epoch % 60) < 10) {
-      // In the first 10 seconds of each minute, we'll want a leading '0'
-      Serial.print('0');
-   }
-   
-   Serial.println(epoch % 60); // print the second
+      Serial.print((epoch  % 3600) / 60); // print the minute (3600 equals secs per minute)
+      Serial.print(':');
+      if ((epoch % 60) < 10) {
+         // In the first 10 seconds of each minute, we'll want a leading '0'
+         Serial.print('0');
+      }
+      Serial.println(epoch % 60); // print the second
    }
   // wait ten seconds before asking for the time again
   delay(3000);
@@ -391,9 +306,7 @@ void ETHERNET_CHECK(){
  }
 }
 
-
-void sendNTPpacket(const char * address) 
-{
+void sendNTPpacket(const char * address) {
   // set all bytes in the buffer to 0
   memset(packetBuffer, 0, NTP_PACKET_SIZE);
   // Initialize values needed to form NTP request
